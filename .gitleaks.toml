@@ -1,0 +1,35 @@
+# gitleaks configuration for repositories using this bundle.
+# Auto-discovered by gitleaks when placed at the repository root.
+# Reference: https://github.com/gitleaks/gitleaks#configuration
+
+title = "precommit-security-hooks baseline config"
+
+# Start from the ~200 upstream rules, then narrow below.
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "Intentionally leaky fixtures used to prove the hooks actually fire."
+paths = ['''^demo/''']
+
+[[allowlists]]
+description = "Lockfiles, vendored code and binary assets: high volume, low signal."
+paths = [
+  '''(^|/)(package-lock\.json|yarn\.lock|pnpm-lock\.yaml|poetry\.lock|uv\.lock|Cargo\.lock|go\.sum)$''',
+  '''(^|/)vendor/''',
+  '''(^|/)node_modules/''',
+  '''\.(png|jpe?g|gif|svg|ico|pdf|woff2?|ttf)$''',
+]
+
+[[allowlists]]
+description = "Placeholder values that look like credentials but never are."
+regexTarget = "match"
+regexes = [
+  '''(?i)(example|sample|dummy|placeholder|redacted|changeme|your[-_]?(key|token|secret))''',
+  '''(?i)\$\{?[A-Z_]+\}?''',       # shell/CI variable interpolation
+  '''(?i)<[a-z0-9_-]+>''',         # <your-token-here> style docs
+]
+
+# Add repository-specific rules below. Composite rules (gitleaks >= 8.28) are
+# supported via [[rules.required]], but note that a required rule must be defined
+# in this file — it cannot reference an id from the inherited default ruleset.
