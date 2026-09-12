@@ -1,5 +1,5 @@
 /*
- * FIXTURE — deliberately insecure Terraform used by scripts/verify.sh.
+ * FIXTURE: deliberately insecure Terraform used by scripts/verify.sh.
  * Expected findings: public-read ACL, world-open ingress, unencrypted bucket.
  * The formatting is also intentionally wrong so `terraform fmt -check` fires.
  */
