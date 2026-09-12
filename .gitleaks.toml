@@ -32,4 +32,4 @@ regexes = [
 
 # Add repository-specific rules below. Composite rules (gitleaks >= 8.28) are
 # supported via [[rules.required]], but note that a required rule must be defined
-# in this file — it cannot reference an id from the inherited default ruleset.
+# in this file: it cannot reference an id from the inherited default ruleset.
