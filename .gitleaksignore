@@ -1,0 +1,15 @@
+# Fingerprints of findings that have been reviewed and accepted.
+#
+# Format:  <commit-sha>:<file-path>:<rule-id>:<line-number>
+# For an uncommitted/staged finding the commit field is empty.
+#
+# Generate a fingerprint by running the scan and copying the "Fingerprint:" line:
+#   ./scripts/scan.sh gitleaks
+#
+# RULES OF ENGAGEMENT
+#   1. A fingerprint here means "reviewed and not a secret" — never "we'll deal
+#      with it later". If the value was ever a real credential, ROTATE IT FIRST;
+#      the value stays in git history forever regardless of what you ignore here.
+#   2. Every entry needs a comment saying who reviewed it and why.
+#   3. Fingerprints include the line number, so they expire when the file moves.
+#      That is deliberate: it forces a re-review instead of silent drift.
