@@ -26,7 +26,7 @@ repos:
         # `dir` and not `git`: the container runs as the host uid, so git refuses the
         # bind-mounted repo ("dubious ownership"), gitleaks falls back to --no-index
         # and EXITS 0 — a scanner that silently passes. Filenames come from the
-        # runner instead, which is also faster. See docs/troubleshooting.md.
+        # runner instead, which is also faster. See the README's Troubleshooting.
         entry: ghcr.io/gitleaks/gitleaks:v8.30.1 dir --redact --no-banner
         language: docker_image
         types: [text]
