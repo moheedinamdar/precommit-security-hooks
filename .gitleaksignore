@@ -4,7 +4,7 @@
 # For an uncommitted/staged finding the commit field is empty.
 #
 # Generate a fingerprint by running the scan and copying the "Fingerprint:" line:
-#   ./scripts/scan.sh gitleaks
+#   ./scripts/scan.sh secrets
 #
 # RULES OF ENGAGEMENT
 #   1. A fingerprint here means "reviewed and not a secret" — never "we'll deal
