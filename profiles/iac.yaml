@@ -1,0 +1,127 @@
+# ---------------------------------------------------------------------------
+# GENERATED FILE - do not edit.
+# Source: profiles/parts/*.yaml   Build: scripts/build-profiles.sh
+# ---------------------------------------------------------------------------
+# GENERATED SECTION HEADER — edit profiles/parts/*.yaml, then run scripts/build-profiles.sh
+#
+# Every scanner in this file runs from its official, version-pinned container image
+# via pre-commit's `docker_image` language. What a teammate needs installed:
+#   1. Docker (or any OCI runtime providing a `docker` CLI)
+#   2. a hook runner: `pre-commit`, or `prek` if they would rather not have Python
+#
+# Nothing else is installed on their machine, on PATH, or in their shell profile.
+
+minimum_pre_commit_version: "4.0.0"
+default_install_hook_types: [pre-commit, commit-msg, pre-push]
+default_stages: [pre-commit]
+fail_fast: false
+
+repos:
+  - repo: local
+    hooks:
+      # --- Secrets ---------------------------------------------------------
+      - id: gitleaks
+        name: "gitleaks · secrets in changed files"
+        description: Offline secret detection over the files being committed.
+        # `dir` and not `git`: the container runs as the host uid, so git refuses the
+        # bind-mounted repo ("dubious ownership"), gitleaks falls back to --no-index
+        # and EXITS 0 — a scanner that silently passes. Filenames come from the
+        # runner instead, which is also faster. See docs/troubleshooting.md.
+        entry: ghcr.io/gitleaks/gitleaks:v8.30.1 dir --redact --no-banner
+        language: docker_image
+        types: [text]
+
+      - id: trufflehog
+        name: "trufflehog · live credential verification"
+        description: >-
+          Confirms whether a detected credential is actually live. Runs on push, not
+          on commit: it is slow and it sends candidate secrets to vendor APIs. Only
+          verified and indeterminate results fail the push — add --no-verification
+          for an offline (and much noisier) run.
+        entry: trufflesecurity/trufflehog:3.97.4 git file:///src --max-depth=50 --results=verified,unknown --fail --no-update
+        language: docker_image
+        pass_filenames: false
+        stages: [pre-push]
+      # --- Containers ------------------------------------------------------
+      - id: hadolint
+        name: "hadolint · Dockerfile lint"
+        entry: hadolint/hadolint:v2.15.1 hadolint
+        language: docker_image
+        types: [dockerfile]
+
+      # --- Shell -----------------------------------------------------------
+      - id: shellcheck
+        name: "shellcheck · shell script analysis"
+        entry: koalaman/shellcheck:v0.11.0 --external-sources --severity=warning
+        language: docker_image
+        types: [shell]
+
+      # --- Commit messages -------------------------------------------------
+      # Conventional Commits, enforced with the runner's built-in regex engine.
+      # No image, no interpreter, no dependency.
+      - id: conventional-commit
+        name: "commit message · Conventional Commits"
+        entry: |
+          (?x)^(
+            (build|chore|ci|docs|feat|fix|perf|refactor|revert|style|test)
+            (\([^)]+\))?!?:\ .+
+            |Merge\ .*
+            |Revert\ .*
+            |(fixup|squash)!\ .*
+            |\#.*
+          )$
+        language: pygrep
+        args: [--negate]
+        stages: [commit-msg]
+      # --- Infrastructure as code -------------------------------------------
+      # Included in the `iac` and `full` profiles only.
+      - id: terraform-fmt
+        name: "terraform · fmt check"
+        entry: hashicorp/terraform:1.16.2 fmt -check -diff -recursive .
+        language: docker_image
+        files: \.tf$
+        pass_filenames: false
+
+      - id: trivy-config
+        name: "trivy · IaC misconfiguration"
+        description: Replaces the deprecated tfsec. Needs network on first run to fetch checks.
+        entry: aquasec/trivy:0.74.0 --cache-dir /tmp/.trivy config --exit-code=1 --severity=HIGH,CRITICAL .
+        language: docker_image
+        files: (\.tf$|\.tf\.json$|Dockerfile|docker-compose.*\.ya?ml$|\.ya?ml$)
+        pass_filenames: false
+
+      - id: checkov
+        name: "checkov · policy as code"
+        entry: bridgecrew/checkov:3.3.16 --quiet --compact --skip-download --directory .
+        language: docker_image
+        files: (\.tf$|\.ya?ml$|\.json$|Dockerfile)
+        pass_filenames: false
+
+      - id: kubeconform
+        name: "kubeconform · Kubernetes schema validation"
+        description: Point `files` at wherever your manifests actually live.
+        entry: ghcr.io/yannh/kubeconform:v0.8.0 -strict -summary -ignore-missing-schemas
+        language: docker_image
+        files: ^(k8s|kubernetes|manifests|deploy)/.*\.ya?ml$
+
+  # --- Repository hygiene ---------------------------------------------------
+  # The one non-Docker block. These are pure Python and the runner builds them an
+  # isolated, cached environment — nothing is installed on the machine or on PATH.
+  # `prek` executes most of them as native Rust with no environment at all.
+  # Safe to delete: gitleaks already covers the private-key case.
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: detect-private-key
+      - id: check-added-large-files
+        args: [--maxkb=1024]
+      - id: check-merge-conflict
+      - id: check-case-conflict
+      - id: forbid-submodules
+      - id: check-yaml
+      - id: check-json
+      - id: check-toml
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
+      - id: no-commit-to-branch
+        args: [--branch, main, --branch, master]
