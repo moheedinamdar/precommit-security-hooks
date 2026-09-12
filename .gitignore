@@ -1,0 +1,8 @@
+# macOS
+.DS_Store
+
+# pre-commit / hook runner caches
+.pre-commit-cache/
+
+# scan reports written by scripts/scan.sh
+gitleaks-report.json
