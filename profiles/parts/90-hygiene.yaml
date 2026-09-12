@@ -1,7 +1,7 @@
 
   # --- Repository hygiene ---------------------------------------------------
   # The one non-Docker block. These are pure Python and the runner builds them an
-  # isolated, cached environment — nothing is installed on the machine or on PATH.
+  # isolated, cached environment: nothing is installed on the machine or on PATH.
   # `prek` executes most of them as native Rust with no environment at all.
   # Safe to delete: gitleaks already covers the private-key case.
   - repo: https://github.com/pre-commit/pre-commit-hooks
