@@ -1,0 +1,28 @@
+# hadolint configuration, auto-discovered at the repository root.
+# Rule reference: https://github.com/hadolint/hadolint#rules
+
+failure-threshold: warning
+
+# Registries a FROM / COPY --from is allowed to pull from (hadolint 2.15 DL3026).
+trustedRegistries:
+  - docker.io
+  - ghcr.io
+  - "*.pkg.dev"
+  - "*.amazonaws.com"
+  - registry.k8s.io
+  - quay.io
+
+ignored:
+  # Pinning every apt package version is unworkable on images rebuilt weekly;
+  # rebuild cadence plus image scanning covers this instead.
+  - DL3008
+  - DL3013 # same argument, pip
+
+override:
+  error:
+    - DL3002 # do not switch back to root as the last USER
+    - DL3004 # do not use sudo
+    - DL3007 # do not pin to :latest
+    - DL3026 # only pull from trusted registries
+    - DL3064 # no sensitive data in ARG/ENV (hadolint 2.15+)
+    - SC2086 # unquoted variable inside RUN
