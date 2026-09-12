@@ -1,4 +1,4 @@
-# FIXTURE — deliberately bad Dockerfile used by scripts/verify.sh to prove hadolint fires.
+# FIXTURE: deliberately bad Dockerfile used by scripts/verify.sh to prove hadolint fires.
 # Expected findings: DL3007 (:latest), DL3002 (ends as root), DL3020 (ADD over COPY),
 # DL3009 (apt lists not cleaned), DL3015 (no --no-install-recommends), DL3064 (secret in ENV).
 FROM ubuntu:latest
