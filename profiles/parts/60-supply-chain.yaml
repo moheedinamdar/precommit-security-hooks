@@ -1,0 +1,41 @@
+      # --- CI / supply chain ------------------------------------------------
+      # Included in the `full` profile only.
+      - id: zizmor
+        name: "zizmor · Actions + hook config audit"
+        description: >-
+          Audits GitHub Actions workflows and, since 1.29, this bundle's own
+          .pre-commit-config.yaml — impostor commits, unpinned/archived hook repos,
+          insecure URL schemes.
+        entry: ghcr.io/zizmorcore/zizmor:1.30.1 --no-progress --persona=regular
+        language: docker_image
+        files: ^(\.github/workflows/.*\.ya?ml|\.pre-commit-config\.yaml|action\.ya?ml)$
+
+      - id: actionlint
+        name: "actionlint · workflow syntax and expressions"
+        entry: rhysd/actionlint:1.7.12 -color
+        language: docker_image
+        files: ^\.github/workflows/.*\.ya?ml$
+
+      - id: osv-scanner
+        name: "osv-scanner · known vulnerable dependencies"
+        # Gated on lockfiles: with no package source to scan, osv-scanner exits 128,
+        # which would fail every push in a repo that has no dependencies.
+        entry: ghcr.io/google/osv-scanner:v2.5.1 scan source --recursive .
+        language: docker_image
+        files: (package-lock\.json|yarn\.lock|pnpm-lock\.yaml|poetry\.lock|uv\.lock|Pipfile\.lock|Cargo\.lock|go\.mod|go\.sum|Gemfile\.lock|composer\.lock|pom\.xml|requirements[^/]*\.txt)$
+        pass_filenames: false
+        stages: [pre-push]
+
+      - id: shfmt
+        name: "shfmt · shell formatting"
+        entry: mvdan/shfmt:v3.14.1 --diff --indent 2
+        language: docker_image
+        types: [shell]
+
+      # Semgrep is a ~600 MB image and a multi-second scan; enable it deliberately.
+      # - id: semgrep
+      #   name: "semgrep · SAST"
+      #   entry: semgrep/semgrep:1.176.1 semgrep scan --config=p/ci --error --quiet
+      #   language: docker_image
+      #   pass_filenames: false
+      #   stages: [pre-push]
