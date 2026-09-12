@@ -3,7 +3,7 @@
 #
 # Builds a throwaway repository full of deliberately broken fixtures, runs every
 # hook against it, and asserts each one reports the failure it is supposed to.
-# This is what catches a scanner that silently passes — the failure mode that
+# This is what catches a scanner that silently passes: the failure mode that
 # makes a security hook worse than no hook at all.
 #
 # Requires: docker, a hook runner, and network access on first run.
@@ -74,7 +74,7 @@ report() {
     printf '  ok    %s\n' "$2"
   else
     FAILURES=$((FAILURES + 1))
-    printf '  FAIL  %s — %s\n' "$2" "$3"
+    printf '  FAIL  %s: %s\n' "$2" "$3"
   fi
 }
 
