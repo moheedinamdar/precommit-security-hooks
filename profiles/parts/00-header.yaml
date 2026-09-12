@@ -1,4 +1,4 @@
-# GENERATED SECTION HEADER — edit profiles/parts/*.yaml, then run scripts/build-profiles.sh
+# GENERATED SECTION HEADER: edit profiles/parts/*.yaml, then run scripts/build-profiles.sh
 #
 # Every scanner in this file runs from its official, version-pinned container image
 # via pre-commit's `docker_image` language. What a teammate needs installed:
