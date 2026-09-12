@@ -1,4 +1,4 @@
-# FIXTURE — invalid Kubernetes manifest used by scripts/verify.sh to prove kubeconform fires.
+# FIXTURE: invalid Kubernetes manifest used by scripts/verify.sh to prove kubeconform fires.
 # `replicas` must be an integer, and `spec.selector` is required.
 apiVersion: apps/v1
 kind: Deployment
