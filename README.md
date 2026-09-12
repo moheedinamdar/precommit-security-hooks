@@ -46,14 +46,14 @@ This bundle uses pre-commit's `docker_image` language instead:
 | | Toolchain hooks | This bundle |
 | --- | --- | --- |
 | Installed on the machine | Go, Python, Node, each scanner | Docker + a hook runner |
-| Version drift across the team | per-laptop | impossible — the image tag is the version |
+| Version drift across the team | per-laptop | impossible: the image tag is the version |
 | Onboarding | install N tools | `docker pull` on first run |
 | Removal | hunt down binaries | `docker image rm` |
 
 The one exception is the repository-hygiene block, which uses the upstream
 [`pre-commit/pre-commit-hooks`](https://github.com/pre-commit/pre-commit-hooks) repo.
-Those are pure-Python and the runner builds them an isolated cached environment —
-still nothing on `PATH`. Under `prek` most of them execute as native Rust with no
+Those are pure-Python and the runner builds them an isolated cached environment,
+and still nothing lands on `PATH`. Under `prek` most of them execute as native Rust with no
 environment at all.
 
 ## Requirements
@@ -63,12 +63,12 @@ environment at all.
 | **Docker** | every scanner is a container | Docker Desktop, Colima, Rancher Desktop, or Podman with a `docker` shim |
 | **A hook runner** | wires the hooks into git | `curl -LsSf https://prek.j178.dev/install.sh \| sh` **or** `pipx install pre-commit` |
 
-Either runner works — the config format is identical.
+Either runner works: the config format is identical.
 [`prek`](https://github.com/j178/prek) is a single Rust binary with no Python
 dependency and is noticeably faster; `pre-commit` is the reference implementation.
 `install.sh` auto-detects, preferring `prek`.
 
-First run pulls roughly 1–2 GB of images depending on profile. After that they are cached.
+First run pulls roughly 1-2 GB of images depending on profile. After that they are cached.
 
 ## Install
 
@@ -89,7 +89,7 @@ What it does, in order:
 
 1. Validates the profile, that the target is a git repository, and that Docker is on `PATH`.
 2. Copies the chosen profile to `.pre-commit-config.yaml`.
-   **Refuses to clobber an existing config** unless `--force` — it prints a `diff` command instead.
+   **Refuses to clobber an existing config** unless `--force`. It prints a `diff` command instead.
 3. Copies `.gitleaks.toml`, `.gitleaksignore` and `.hadolint.yaml`, **skipping any that
    already exist** so your repo's existing tuning always wins.
 4. Runs `<runner> install --install-hooks` for the `pre-commit`, `commit-msg` and
@@ -108,8 +108,8 @@ Profiles are cumulative: `iac` is `core` plus IaC, `full` is `iac` plus supply c
 | Shell analysis (shellcheck) | ✅ | ✅ | ✅ |
 | Conventional Commits | ✅ | ✅ | ✅ |
 | Repository hygiene (11 checks, incl. `detect-private-key`) | ✅ | ✅ | ✅ |
-| Terraform fmt, Trivy, Checkov, kubeconform | — | ✅ | ✅ |
-| zizmor, actionlint, osv-scanner, shfmt | — | — | ✅ |
+| Terraform fmt, Trivy, Checkov, kubeconform | no | ✅ | ✅ |
+| zizmor, actionlint, osv-scanner, shfmt | no | no | ✅ |
 | Hooks total | 16 | 20 | 24 |
 
 Pick `core` unless you have a reason not to. It is the set that is fast enough that
@@ -120,7 +120,7 @@ nobody is tempted to `--no-verify`.
 Stage `pre-commit` runs on `git commit`; `pre-push` on `git push`; `commit-msg`
 validates the message.
 
-### Secrets — all profiles
+### Secrets: all profiles
 
 | Hook | Image | Stage | Notes |
 | --- | --- | --- | --- |
@@ -131,39 +131,39 @@ validates the message.
 > **Privacy note.** TruffleHog verification sends candidate credentials to vendor APIs
 > to test them. That is the entire point of verification, and it is why the hook runs
 > on push rather than on every commit. To disable it, add `--no-verification` to the
-> hook `entry` — expect considerably more noise.
+> hook `entry`. Expect considerably more noise.
 
-### Containers, shell, commit messages — all profiles
+### Containers, shell, commit messages: all profiles
 
 | Hook | Image | Stage | Notes |
 | --- | --- | --- | --- |
 | `hadolint` | `hadolint/hadolint:v2.15.1` | pre-commit | Dockerfile lint with embedded ShellCheck. Reads `.hadolint.yaml`. |
 | `shellcheck` | `koalaman/shellcheck:v0.11.0` | pre-commit | `--severity=warning`, `--external-sources`. |
-| `conventional-commit` | none | commit-msg | A `pygrep` regex — no image, no interpreter. Allows merge, revert, fixup and squash messages. |
+| `conventional-commit` | none | commit-msg | A `pygrep` regex: no image, no interpreter. Allows merge, revert, fixup and squash messages. |
 
-### Repository hygiene — all profiles
+### Repository hygiene: all profiles
 
 From `pre-commit/pre-commit-hooks` rev `v6.0.0`: `detect-private-key`,
 `check-added-large-files` (`--maxkb=1024`), `check-merge-conflict`,
 `check-case-conflict`, `forbid-submodules`, `check-yaml`, `check-json`, `check-toml`,
 `end-of-file-fixer`, `trailing-whitespace`, `no-commit-to-branch` (`main`, `master`).
 
-### Infrastructure as code — `iac` and `full`
+### Infrastructure as code: `iac` and `full`
 
 | Hook | Image | Notes |
 | --- | --- | --- |
 | `terraform-fmt` | `hashicorp/terraform:1.16.2` | `fmt -check -diff -recursive`. |
 | `trivy-config` | `aquasec/trivy:0.74.0` | Misconfiguration scanning, `HIGH,CRITICAL` only. Replaces the deprecated `tfsec`. Needs network on first run to fetch checks. |
 | `checkov` | `bridgecrew/checkov:3.3.16` | Policy-as-code. `--skip-download` keeps it offline after the image pull. |
-| `kubeconform` | `ghcr.io/yannh/kubeconform:v0.8.0` | Schema validation. **Scoped to `k8s/`, `kubernetes/`, `manifests/`, `deploy/`** — edit `files:` if your manifests live elsewhere. |
+| `kubeconform` | `ghcr.io/yannh/kubeconform:v0.8.0` | Schema validation. **Scoped to `k8s/`, `kubernetes/`, `manifests/`, `deploy/`.** Edit `files:` if your manifests live elsewhere. |
 
-### CI and supply chain — `full`
+### CI and supply chain: `full`
 
 | Hook | Image | Stage | Notes |
 | --- | --- | --- | --- |
-| `zizmor` | `ghcr.io/zizmorcore/zizmor:1.30.1` | pre-commit | Audits workflows **and `.pre-commit-config.yaml` itself** — impostor commits, unpinned or archived hook repos, insecure URL schemes. |
+| `zizmor` | `ghcr.io/zizmorcore/zizmor:1.30.1` | pre-commit | Audits workflows **and `.pre-commit-config.yaml` itself**: impostor commits, unpinned or archived hook repos, insecure URL schemes. |
 | `actionlint` | `rhysd/actionlint:1.7.12` | pre-commit | Workflow syntax, expression typing, runner labels. |
-| `osv-scanner` | `ghcr.io/google/osv-scanner:v2.5.1` | **pre-push** | Known-vulnerable dependencies. Gated on lockfile patterns — with no package source it exits 128, which would otherwise fail every push in a repo with no dependencies. |
+| `osv-scanner` | `ghcr.io/google/osv-scanner:v2.5.1` | **pre-push** | Known-vulnerable dependencies. Gated on lockfile patterns: with no package source it exits 128, which would otherwise fail every push in a repo with no dependencies. |
 | `shfmt` | `mvdan/shfmt:v3.14.1` | pre-commit | `--diff --indent 2`. |
 
 Semgrep is present but **commented out** in `profiles/parts/60-supply-chain.yaml`: a
@@ -200,7 +200,7 @@ This writes `.gitleaks-baseline.json`, which `scan.sh secrets` then excludes.
    history no matter what any ignore file says.
 2. Every entry needs a comment recording who reviewed it and why.
 3. Fingerprints include the line number, so they expire when a file moves. That is
-   deliberate — it forces re-review instead of silent drift.
+   deliberate: it forces re-review instead of silent drift.
 4. Shrink the baseline over time. Never regenerate it to make a failure go away.
 
 ## Scripts
@@ -221,24 +221,24 @@ repository, fills it with deliberately broken fixtures, and asserts **13 outcome
 
 - **10 hooks must fail**: `gitleaks`, `hadolint`, `shellcheck`, `terraform-fmt`,
   `trivy-config`, `checkov`, `kubeconform`, `zizmor`, `actionlint`, `osv-scanner`.
-- **1 hook must pass**: `trufflehog` — the fixture credentials are synthetic, so
+- **1 hook must pass**: `trufflehog`. The fixture credentials are synthetic, so
   nothing verifies as live. Passing is the correct result and proves the hook runs
   without erroring.
 - **2 commit-message cases**: `add some stuff` rejected, `feat(hooks): …` accepted.
 
 This is not theoretical. It is what caught the `gitleaks` failure documented under
-[Troubleshooting](#troubleshooting) — a hook that was reporting success while
+[Troubleshooting](#troubleshooting), a hook that was reporting success while
 scanning nothing.
 
 The fixtures live in `demo/`. Note `demo/leaky.env.tmpl`: its credential values are
 **generated at run time**, never committed. A repository that teaches secret scanning
-must not ship strings that trip secret scanners — a literal token there would trip
+must not ship strings that trip secret scanners. A literal token there would trip
 GitHub push protection and every downstream fork's scanners. The generated values
 still match the gitleaks rule shapes, so the hook is exercised against a genuine match.
 
 ## Editing the hook set
 
-`profiles/*.yaml` are **generated — do not edit them**. The sources are:
+`profiles/*.yaml` are **generated, do not edit them**. The sources are:
 
 ```text
 profiles/parts/00-header.yaml         runner settings, shared preamble
@@ -256,7 +256,7 @@ scripts/build-profiles.sh    # regenerates core, iac, full and this repo's own c
 scripts/verify.sh            # prove the change still detects what it claims to
 ```
 
-Concatenating from shared parts is what stops the three profiles drifting apart — a
+Concatenating from shared parts is what stops the three profiles drifting apart: a
 fix applied to `core` cannot silently miss `full`. `build-profiles.sh --check` enforces
 it.
 
@@ -280,7 +280,7 @@ then `scripts/verify.sh` to confirm the new image still behaves the same way.
 
 ## Running the same checks in CI
 
-Hooks are a fast feedback loop, not an enforcement boundary — anyone can
+Hooks are a fast feedback loop, not an enforcement boundary: anyone can
 `git commit --no-verify`. Run the same config in CI so a bypass cannot reach `main`:
 
 ```yaml
@@ -301,37 +301,37 @@ jobs:
 ```
 
 The action is pinned to a commit SHA because `zizmor`'s `unpinned-uses` audit flags
-version tags — this bundle would otherwise fail its own check.
+version tags, so this bundle would otherwise fail its own check.
 
 ## Troubleshooting
 
-**`docker: Cannot connect to the Docker daemon`** — Docker is not running. Every
+**`docker: Cannot connect to the Docker daemon`**. Docker is not running. Every
 scanner is a container; start Docker Desktop/Colima and retry.
 
-**The first run is very slow** — it is pulling images. Subsequent runs use the cache.
+**The first run is very slow.** It is pulling images. Subsequent runs use the cache.
 Pre-warm with `pre-commit run --all-files` immediately after install.
 
-**gitleaks reported nothing on a file that obviously contains a secret** — the fixed
+**gitleaks reported nothing on a file that obviously contains a secret**. This is the fixed
 version of a real bug, worth understanding. The hook deliberately runs
 `gitleaks dir`, not `gitleaks git`. Because the container runs as the host UID, git
 inside the container refuses the bind-mounted repository with *"detected dubious
-ownership"*, gitleaks falls back to `--no-index`, and **exits 0** — a scanner that
+ownership"*, gitleaks falls back to `--no-index`, and **exits 0**, a scanner that
 silently passes. Using `dir` with filenames supplied by the runner removes git from the
 path entirely, and is faster. `scripts/scan.sh`, which genuinely needs history, solves
 the same problem with `GIT_CONFIG_COUNT`/`safe.directory` environment variables so the
 caller's git config is never modified.
 
-**`osv-scanner` fails with exit 128** — it found no package source. The hook is gated
+**`osv-scanner` fails with exit 128.** It found no package source. The hook is gated
 on lockfile patterns to avoid this; if you hit it, your lockfile sits at a path the
 `files:` regex does not match.
 
-**`kubeconform` never runs** — it is scoped to `k8s/`, `kubernetes/`, `manifests/` and
+**`kubeconform` never runs.** It is scoped to `k8s/`, `kubernetes/`, `manifests/` and
 `deploy/`. Adjust `files:` in `profiles/parts/50-iac.yaml`.
 
-**A hook is too slow on commit** — move it to `stages: [pre-push]`, as `trufflehog` and
+**A hook is too slow on commit.** Move it to `stages: [pre-push]`, as `trufflehog` and
 `osv-scanner` already are.
 
-**A finding is a false positive** — add a path or regex allowlist to `.gitleaks.toml`
+**A finding is a false positive.** Add a path or regex allowlist to `.gitleaks.toml`
 if it is a class of false positive, or a reviewed fingerprint to `.gitleaksignore` if
 it is a one-off. Do not disable the hook.
 
@@ -340,7 +340,7 @@ it is a one-off. Do not disable the hook.
 **Docker-only, no host installs.** See [Why container images](#why-container-images).
 
 **gitleaks *and* TruffleHog, not one or the other.** They answer different questions.
-gitleaks is offline pattern matching — fast enough for every commit. TruffleHog asks
+gitleaks is offline pattern matching, fast enough for every commit. TruffleHog asks
 the vendor whether the credential is *live*, which is slow and network-bound, so it
 runs on push. Together: cheap detection everywhere, expensive confirmation at the
 boundary.
@@ -381,9 +381,9 @@ seconds to every commit gets bypassed, and a bypassed hook detects nothing.
 ```
 
 [`docs/hook-catalog.md`](docs/hook-catalog.md) catalogues the broader pre-commit
-security tooling landscape as of September 2026 — including the tools this bundle
+security tooling landscape as of September 2026, including the tools this bundle
 deliberately does not ship, and why.
 
 ## License
 
-MIT — see [LICENSE](LICENSE).
+MIT, see [LICENSE](LICENSE).
