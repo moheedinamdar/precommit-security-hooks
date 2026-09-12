@@ -1,0 +1,15 @@
+# FIXTURE — deliberately unsafe workflow used by scripts/verify.sh to prove zizmor fires.
+# Expected findings: dangerous-triggers (pull_request_target), excessive-permissions
+# (write-all), unpinned-uses (@main), template-injection (attacker-controlled title).
+name: unsafe-fixture
+
+on: pull_request_target
+
+permissions: write-all
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@main
+      - run: echo "building ${{ github.event.pull_request.title }}"
