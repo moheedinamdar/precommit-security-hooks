@@ -2,7 +2,7 @@
 # GENERATED FILE - do not edit.
 # Source: profiles/parts/*.yaml   Build: scripts/build-profiles.sh
 # ---------------------------------------------------------------------------
-# GENERATED SECTION HEADER — edit profiles/parts/*.yaml, then run scripts/build-profiles.sh
+# GENERATED SECTION HEADER: edit profiles/parts/*.yaml, then run scripts/build-profiles.sh
 #
 # Every scanner in this file runs from its official, version-pinned container image
 # via pre-commit's `docker_image` language. What a teammate needs installed:
@@ -29,7 +29,7 @@ repos:
         description: Offline secret detection over the files being committed.
         # `dir` and not `git`: the container runs as the host uid, so git refuses the
         # bind-mounted repo ("dubious ownership"), gitleaks falls back to --no-index
-        # and EXITS 0 — a scanner that silently passes. Filenames come from the
+        # and EXITS 0, a scanner that silently passes. Filenames come from the
         # runner instead, which is also faster. See the README's Troubleshooting.
         entry: ghcr.io/gitleaks/gitleaks:v8.30.1 dir --redact --no-banner
         language: docker_image
@@ -40,7 +40,7 @@ repos:
         description: >-
           Confirms whether a detected credential is actually live. Runs on push, not
           on commit: it is slow and it sends candidate secrets to vendor APIs. Only
-          verified and indeterminate results fail the push — add --no-verification
+          verified and indeterminate results fail the push. Add --no-verification
           for an offline (and much noisier) run.
         entry: trufflesecurity/trufflehog:3.97.4 git file:///src --max-depth=50 --results=verified,unknown --fail --no-update
         language: docker_image
@@ -113,7 +113,7 @@ repos:
         name: "zizmor · Actions + hook config audit"
         description: >-
           Audits GitHub Actions workflows and, since 1.29, this bundle's own
-          .pre-commit-config.yaml — impostor commits, unpinned/archived hook repos,
+          .pre-commit-config.yaml: impostor commits, unpinned/archived hook repos,
           insecure URL schemes.
         entry: ghcr.io/zizmorcore/zizmor:1.30.1 --no-progress --persona=regular
         language: docker_image
@@ -151,7 +151,7 @@ repos:
 
   # --- Repository hygiene ---------------------------------------------------
   # The one non-Docker block. These are pure Python and the runner builds them an
-  # isolated, cached environment — nothing is installed on the machine or on PATH.
+  # isolated, cached environment: nothing is installed on the machine or on PATH.
   # `prek` executes most of them as native Rust with no environment at all.
   # Safe to delete: gitleaks already covers the private-key case.
   - repo: https://github.com/pre-commit/pre-commit-hooks
