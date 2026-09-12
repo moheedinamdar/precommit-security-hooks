@@ -1,0 +1,17 @@
+# GENERATED SECTION HEADER — edit profiles/parts/*.yaml, then run scripts/build-profiles.sh
+#
+# Every scanner in this file runs from its official, version-pinned container image
+# via pre-commit's `docker_image` language. What a teammate needs installed:
+#   1. Docker (or any OCI runtime providing a `docker` CLI)
+#   2. a hook runner: `pre-commit`, or `prek` if they would rather not have Python
+#
+# Nothing else is installed on their machine, on PATH, or in their shell profile.
+
+minimum_pre_commit_version: "4.0.0"
+default_install_hook_types: [pre-commit, commit-msg, pre-push]
+default_stages: [pre-commit]
+fail_fast: false
+
+repos:
+  - repo: local
+    hooks:
