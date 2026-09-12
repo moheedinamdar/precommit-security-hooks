@@ -1,0 +1,30 @@
+      # --- Infrastructure as code -------------------------------------------
+      # Included in the `iac` and `full` profiles only.
+      - id: terraform-fmt
+        name: "terraform · fmt check"
+        entry: hashicorp/terraform:1.16.2 fmt -check -diff -recursive .
+        language: docker_image
+        files: \.tf$
+        pass_filenames: false
+
+      - id: trivy-config
+        name: "trivy · IaC misconfiguration"
+        description: Replaces the deprecated tfsec. Needs network on first run to fetch checks.
+        entry: aquasec/trivy:0.74.0 --cache-dir /tmp/.trivy config --exit-code=1 --severity=HIGH,CRITICAL .
+        language: docker_image
+        files: (\.tf$|\.tf\.json$|Dockerfile|docker-compose.*\.ya?ml$|\.ya?ml$)
+        pass_filenames: false
+
+      - id: checkov
+        name: "checkov · policy as code"
+        entry: bridgecrew/checkov:3.3.16 --quiet --compact --skip-download --directory .
+        language: docker_image
+        files: (\.tf$|\.ya?ml$|\.json$|Dockerfile)
+        pass_filenames: false
+
+      - id: kubeconform
+        name: "kubeconform · Kubernetes schema validation"
+        description: Point `files` at wherever your manifests actually live.
+        entry: ghcr.io/yannh/kubeconform:v0.8.0 -strict -summary -ignore-missing-schemas
+        language: docker_image
+        files: ^(k8s|kubernetes|manifests|deploy)/.*\.ya?ml$
