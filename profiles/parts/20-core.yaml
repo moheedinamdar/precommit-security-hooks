@@ -1,0 +1,31 @@
+      # --- Containers ------------------------------------------------------
+      - id: hadolint
+        name: "hadolint · Dockerfile lint"
+        entry: hadolint/hadolint:v2.15.1 hadolint
+        language: docker_image
+        types: [dockerfile]
+
+      # --- Shell -----------------------------------------------------------
+      - id: shellcheck
+        name: "shellcheck · shell script analysis"
+        entry: koalaman/shellcheck:v0.11.0 --external-sources --severity=warning
+        language: docker_image
+        types: [shell]
+
+      # --- Commit messages -------------------------------------------------
+      # Conventional Commits, enforced with the runner's built-in regex engine.
+      # No image, no interpreter, no dependency.
+      - id: conventional-commit
+        name: "commit message · Conventional Commits"
+        entry: |
+          (?x)^(
+            (build|chore|ci|docs|feat|fix|perf|refactor|revert|style|test)
+            (\([^)]+\))?!?:\ .+
+            |Merge\ .*
+            |Revert\ .*
+            |(fixup|squash)!\ .*
+            |\#.*
+          )$
+        language: pygrep
+        args: [--negate]
+        stages: [commit-msg]
